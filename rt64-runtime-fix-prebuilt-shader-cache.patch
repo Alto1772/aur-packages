@@ -1,0 +1,13 @@
+diff --git a/src/render/rt64_raster_shader_cache.cpp b/src/render/rt64_raster_shader_cache.cpp
+index ce13aa2..8762597 100644
+--- a/src/render/rt64_raster_shader_cache.cpp
++++ b/src/render/rt64_raster_shader_cache.cpp
+@@ -33,7 +33,7 @@ namespace RT64 {
+                 break;
+             }
+ 
+-            if ((magic != OfflineMagic) || (version != OfflineVersion) || (vsHash != RasterShaderUber::RasterVSTextHash) || (psHash != RasterShaderUber::RasterPSTextHash)) {
++            if ((magic != OfflineMagic) || (version != OfflineVersion) /* || (vsHash != RasterShaderUber::RasterVSTextHash) || (psHash != RasterShaderUber::RasterPSTextHash) */) {
+                 return false;
+             }
+ 

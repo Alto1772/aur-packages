@@ -1,0 +1,8 @@
+*
+!.gitignore
+!PKGBUILD
+!.SRCINFO
+!mm-compat-disasm-script.patch
+!rt64-cmake-libxrandr.patch
+!rt64-runtime-fix-prebuilt-shader-cache.patch
+!zelda64recomp.desktop

@@ -1,0 +1,83 @@
+diff --git a/tools/disasm/disasm.py b/tools/disasm/disasm.py
+index 78d66d337..b620da89c 100755
+--- a/tools/disasm/disasm.py
++++ b/tools/disasm/disasm.py
+@@ -1112,7 +1112,7 @@ def asm_header(section_name: str):
+ def getImmOverride(insn: rabbitizer.Instruction):
+     if insn.isBranch():
+         return f".L{insn.getBranchOffset() + insn.vram:08X}"
+-    elif insn.isJump():
++    elif insn.isJumpWithAddress():
+         return proper_name(insn.getInstrIndexAsVram(), in_data=False, is_symbol=True)
+ 
+     elif insn.uniqueId == rabbitizer.InstrId.cpu_ori:
+@@ -1162,6 +1162,7 @@ def fixup_text_symbols(data, vram, data_regions, info):
+     # We didn't have full symbols available during initial disassembly,
+     # so here we loop over each instruction, and do symbol lookups, add labels etc
+ 
++    cur_label = None
+     delay_slot = False
+     disasm_as_data = False
+     for entry in file:
+@@ -1169,6 +1170,12 @@ def fixup_text_symbols(data, vram, data_regions, info):
+         in_data = entry["data"]
+         comment = entry["comment"]
+ 
++        # Append .size directive at the end of every function
++        if insn.vram in functions:
++            if cur_label is not None:
++                text.append(f".size {cur_label}, . - {cur_label}\n")
++            cur_label = proper_name(insn.vram)
++
+         text.append(getLabelForVaddr(insn.vram, in_data))
+         if insn.vram in functions:
+             # new function, needs to check this again
+@@ -1191,6 +1198,10 @@ def fixup_text_symbols(data, vram, data_regions, info):
+ 
+         delay_slot = insn.hasDelaySlot()
+ 
++    # and also at the end of the file
++    if cur_label is not None:
++        text.append(f".size {cur_label}, . - {cur_label}\n")
++
+     with open(f"{ASM_OUT}/{segment_dirname}/{info['name']}.text.s", "w") as outfile:
+         outfile.write("".join(text))
+ 
+@@ -1201,6 +1212,7 @@ def disassemble_text(data, vram, data_regions, info):
+ 
+     cur_file = ""
+     cur_vaddr = 0
++    cur_label = None
+ 
+     segment_dirname = ("" if info["type"] != "overlay" else "overlays/") + info["name"]
+     os.makedirs(f"{ASM_OUT}/{segment_dirname}/", exist_ok=True)
+@@ -1241,8 +1253,18 @@ def disassemble_text(data, vram, data_regions, info):
+             )
+             continue
+ 
++        # Append .size directive
++        if vaddr in functions:
++            if cur_label is not None:
++                result += f".size {cur_label}, . - {cur_label}\n"
++            cur_label = proper_name(vaddr)
++
+         result += getLabelForVaddr(vaddr)
+ 
++        # Force explicit symbol type
++        if vaddr in functions:
++            result += f".type {cur_label}, @function\n"
++
+         comment = f"/* {i:06X} {vaddr:08X} {raw_insn:08X} */"
+         extraLJust = 0
+         if delay_slot:
+@@ -1256,6 +1278,10 @@ def disassemble_text(data, vram, data_regions, info):
+ 
+         delay_slot = insn.hasDelaySlot()
+ 
++    # Append .size directive at the end of file
++    if cur_label is not None:
++        result += f".size {cur_label}, . - {cur_label}\n"
++
+     with open(f"{ASM_OUT}/{segment_dirname}/{cur_file}.text.s", "w") as outfile:
+         outfile.write(result)
+ 
