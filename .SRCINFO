@@ -24,7 +24,7 @@ pkgbase = zelda64recomp-git
 	depends = vulkan-icd-loader
 	provides = zelda64recomp
 	conflicts = zelda64recomp
-	conflicts = zelda64recomp-git-bin
+	conflicts = zelda64recomp-bin
 	source = git+https://github.com/Mr-Wiseguy/Zelda64Recomp.git#branch=dev
 	source = git+https://github.com/mikke89/RmlUi.git
 	source = git+https://github.com/rt64/rt64.git
