@@ -22,7 +22,7 @@ makedepends=("cmake" "ninja" "mold" "pkg-config" "python" "make" "clang" "lld" "
 pkgdesc="A port of The Legend of Zelda Majora's Mask made possible by static recompilation (git)"
 license=("GPL-3.0")
 provides=("${_pkgname}")
-conflicts=("${_pkgname}" "${pkgname}-bin")  #  i don't have control over the bin version so i'll append this anyway...
+conflicts=("${_pkgname}" "${_pkgname}-bin")  #  i don't have control over the bin version so i'll append this anyway...
 url="https://github.com/Mr-Wiseguy/${_reponame}"
 source=("git+${url}.git#branch=dev"
 
