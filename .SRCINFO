@@ -1,6 +1,6 @@
 pkgbase = zelda64recomp-git
 	pkgdesc = A port of The Legend of Zelda Majora's Mask made possible by static recompilation (git)
-	pkgver = 1.0.0.r14.g7e8782c
+	pkgver = 1.0.1.r0.gb791a4a
 	pkgrel = 1
 	url = https://github.com/Mr-Wiseguy/Zelda64Recomp
 	arch = x86_64

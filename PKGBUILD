@@ -11,14 +11,14 @@
 _mm_compat_commit=23beee0717364de43ca9a82957cc910cf818de90
 
 _reponame=Zelda64Recomp
-_pkgname=zelda64recomp
+_pkgname=${_reponame,,}
 pkgname=${_pkgname}-git
-pkgver=1.0.0.r14.g7e8782c
+pkgver=1.0.1.r0.gb791a4a
 _zrecomp_dirname="${_reponame}"
 pkgrel=1
 arch=("x86_64")
 depends=("sdl2" "freetype2" "libx11" "libxrandr" "gtk3" "vulkan-driver" "vulkan-icd-loader")
-makedepends=("cmake" "ninja" "mold" "pkg-config" "python" "make" "clang" "lld" "llvm" "mips-linux-gnu-binutils")
+makedepends=("cmake" "ninja" "mold" "python" "make" "clang" "lld" "llvm" "mips-linux-gnu-binutils")
 pkgdesc="A port of The Legend of Zelda Majora's Mask made possible by static recompilation (git)"
 license=("GPL-3.0")
 provides=("${_pkgname}")
@@ -96,6 +96,7 @@ sha256sums=('SKIP'
             '68fa964348231904c427d471091258de75308c7f0a77022fc8a009f8c6b9fae1'
             '59443fba2781cecccf96f76772a04764477c1c57d3226baa43d8cc3c30b085ad'
             'efb1365b3ae362604514c0f9a1a2d11f5dc8688ba5be660a37debf5e3be43f2b')
+
 PKG_PREFIX="/opt/${_pkgname}"
 
 #  Print helpers
@@ -203,7 +204,7 @@ build() {
 
   _msg_info "Building the game..."
 
-  if [[ "$OPTIONS[@]" =~ debug ]]; then
+  if [[ "${OPTIONS[@]}" =~ " debug " ]]; then
     BUILD_TYPE=RelWithDebInfo
   else
     BUILD_TYPE=Release
@@ -242,7 +243,7 @@ SHELL
   install -Dm755 "${_zrecomp_dirname}/build/${bin_name}" "${pkgdir}/${PKG_PREFIX}/${bin_name}"
 
   # Strip the executable whether you like it or not, except for debugging purposes...
-  if ! [[ "$OPTIONS[@]" =~ debug ]]; then
+  if [[ "${OPTIONS[@]}" =~ " debug " ]]; then
     strip --strip-all "${pkgdir}/${PKG_PREFIX}/${bin_name}"
   fi
 
