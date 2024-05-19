@@ -1,13 +1,13 @@
 pkgbase = zelda64recomp
 	pkgdesc = A port of The Legend of Zelda Majora's Mask made possible by static recompilation
-	pkgver = 1.0.0
+	pkgver = 1.0.1
 	pkgrel = 1
 	url = https://github.com/Mr-Wiseguy/Zelda64Recomp
 	arch = x86_64
 	license = GPL-3.0
 	makedepends = cmake
 	makedepends = ninja
-	makedepends = pkg-config
+	makedepends = mold
 	makedepends = python
 	makedepends = make
 	makedepends = clang
@@ -22,11 +22,11 @@ pkgbase = zelda64recomp
 	depends = vulkan-driver
 	depends = vulkan-icd-loader
 	conflicts = zelda64recomp-bin
-	source = Zelda64Recomp-1.0.0.tar.gz::https://github.com/Mr-Wiseguy/Zelda64Recomp/archive/refs/tags/v1.0.0.tar.gz
+	source = Zelda64Recomp-1.0.1.tar.gz::https://github.com/Mr-Wiseguy/Zelda64Recomp/archive/refs/tags/v1.0.1.tar.gz
 	source = RmlUi::git+https://github.com/mikke89/RmlUi.git#commit=a893ea6386e0c842f90a726a53c9b9e888797519
 	source = lunasvg::git+https://github.com/sammycage/lunasvg.git#tag=v2.3.9
 	source = mm-decomp::git+https://github.com/zeldaret/mm#commit=5607eec18bae68e4cd38ef6d1fa69d7f1d84bfc8
-	source = rt64::git+https://github.com/rt64/rt64.git#commit=d64100a058b6fa6185be9a2754a197b31f050467
+	source = rt64::git+https://github.com/rt64/rt64.git#commit=ecdd609c49fb5f10e3040335901d8860ef259f67
 	source = git+https://github.com/NVIDIA/DLSS.git
 	source = git+https://github.com/epezent/implot.git
 	source = git+https://github.com/redorav/hlslpp.git
@@ -44,22 +44,21 @@ pkgbase = zelda64recomp
 	source = git+https://github.com/nothings/stb.git
 	source = git+https://github.com/btzy/nativefiledialog-extended.git
 	source = mm-compat::git+https://github.com/zeldaret/mm#commit=0492c8e89af3806707e44a88379a3c8d9c503ca1
-	source = N64Recomp::git+https://github.com/Mr-Wiseguy/N64Recomp.git#commit=26c5c2cbb844b0f6a3f7c0d1440273e499ee2194
+	source = N64Recomp::git+https://github.com/Mr-Wiseguy/N64Recomp.git#commit=94b59d56f70228c3d3e3062cf1b1ab6ce42153c0
 	source = git+https://github.com/Decompollaborate/rabbitizer.git
 	source = git+https://github.com/serge1/ELFIO.git
 	source = git+https://github.com/fmtlib/fmt.git
-	source = git+https://github.com/ToruNiina/toml11.git
-	source = z64recomp-rsp-ucode-tomls.patch::https://github.com/Mr-Wiseguy/Zelda64Recomp/commit/d5fb5f50c122cc366e04713698b19e876a1fb6b0.patch
+	source = git+https://github.com/marzer/tomlplusplus.git
 	source = rt64-cmake-libxrandr.patch
 	source = rt64-runtime-fix-prebuilt-shader-cache.patch
 	source = mm-compat-disasm-script.patch
 	source = zelda64recomp.desktop
 	source = file://baserom.mm.us.rev1.z64
-	sha256sums = ebb14bdb2c2761df5f693ef88067a1b360214fec6862d13fb7666f296cfb2842
+	sha256sums = 2dd551fb8d090fccdd757b42ff215a293cbd7b11244be091e1aa52d44f1de46d
 	sha256sums = fffad7b6eb3c3cec5b4e9033a09c068d33fb0bf028cc1560a4b96d1a15db32f1
 	sha256sums = 9d3878d9f7d7f93a2181551b8271420fe32d33f7259b3744667bca659b7e2593
 	sha256sums = dc421693786da0df9d309b07134d84edf6e513e986aab92327dfbc7c8bab4f68
-	sha256sums = da92f9046fa47db0889133a81d3dead9be897ecf4bbfb7fe5f77c75c61d5b8b3
+	sha256sums = 52acd1db3ee21a0d377d6d85156b6afa4770cc724b6cd8e65d87ac282d53250b
 	sha256sums = SKIP
 	sha256sums = SKIP
 	sha256sums = SKIP
@@ -77,12 +76,11 @@ pkgbase = zelda64recomp
 	sha256sums = SKIP
 	sha256sums = SKIP
 	sha256sums = b9f25deece8210a15049287953f9f5838545f23cf44d21261fd315869af5a701
-	sha256sums = 2ef4bb99f180fd49535f9cc4dbf6044174ce375ac6132562789279e10b5ffd96
+	sha256sums = ad0d188dd5cfa610456154ecedab2d020e20b641bc812956d7c84052003a51de
 	sha256sums = SKIP
 	sha256sums = SKIP
 	sha256sums = SKIP
 	sha256sums = SKIP
-	sha256sums = 35ce5c58efede09d3a7aaf0532e013c85ea990cd31717e31d770d5a8c19f2757
 	sha256sums = 3bf9a13aa8cf99256c10cd41a98fecc1bc431887606e5902d771e40b743e8b2d
 	sha256sums = 1ff448f413e3ad5bf3e16879c53686decc7d4ce6347d7ec494054ba1f170a88a
 	sha256sums = 2582f9cd6fb69b1e21c2bd10ca2d252e14f690fd17b56b245c8044911bf5d420
