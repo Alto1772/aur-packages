@@ -7,20 +7,19 @@
 # An N64 Majora's Mask US ROM must be provided in order to build this package.
 # Rename it to "baserom.mm.us.rev1.z64" and place it right to where this script is.
 
-#_N64Recomp_commit=e0e52d1fc3399d6153b41db23faea5cf4fc8c976
 _mm_compat_commit=23beee0717364de43ca9a82957cc910cf818de90
 
 _reponame=Zelda64Recomp
 _pkgname=${_reponame,,}
 pkgname=${_pkgname}-git
-pkgver=1.0.1.r0.gb791a4a
+pkgver=1.0.1.r17.gd4898f2
 _zrecomp_dirname="${_reponame}"
 pkgrel=1
-arch=("x86_64")
+arch=("x86_64")  # TODO add for ARM builds
 depends=("sdl2" "freetype2" "libx11" "libxrandr" "gtk3" "vulkan-driver" "vulkan-icd-loader")
-makedepends=("cmake" "ninja" "mold" "python" "make" "clang" "lld" "llvm" "mips-linux-gnu-binutils")
+makedepends=("git" "cmake" "ninja" "mold" "python" "make" "clang" "lld" "llvm" "mips-linux-gnu-binutils")
 pkgdesc="A port of The Legend of Zelda Majora's Mask made possible by static recompilation (git)"
-license=("GPL-3.0")
+license=("GPL-3.0-only")
 provides=("${_pkgname}")
 conflicts=("${_pkgname}" "${_pkgname}-bin")  #  i don't have control over the bin version so i'll append this anyway...
 url="https://github.com/Mr-Wiseguy/${_reponame}"
@@ -29,24 +28,22 @@ source=("git+${url}.git#branch=dev"
         # main dependencies
         "git+https://github.com/mikke89/RmlUi.git"
         "git+https://github.com/rt64/rt64.git"
-        "git+https://github.com/ubawurinna/freetype-windows-binaries.git"
+        #"git+https://github.com/ubawurinna/freetype-windows-binaries.git"
         "mm-decomp::git+https://github.com/zeldaret/mm.git"
         "git+https://github.com/sammycage/lunasvg.git"
 
         # RT64 dependencies
-        "git+https://github.com/NVIDIA/DLSS.git"
         "git+https://github.com/epezent/implot.git"
         "git+https://github.com/redorav/hlslpp.git"
-        "git+https://github.com/intel/xess.git"
-        "git+https://github.com/mupen64plus/mupen64plus-win32-deps.git"
-        "git+https://github.com/mupen64plus/mupen64plus-core.git"
+        #"git+https://github.com/mupen64plus/mupen64plus-win32-deps.git"
+        #"git+https://github.com/mupen64plus/mupen64plus-core.git"
         "git+https://github.com/Cyan4973/xxHash.git"
         "git+https://github.com/zeux/volk.git"
         "git+https://github.com/KhronosGroup/Vulkan-Headers.git"
         "git+https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git"
         "git+https://github.com/ocornut/imgui.git"
         "git+https://github.com/john-chapman/im3d.git"
-        "git+https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator.git"
+        #"git+https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator.git"
         "dxc::git+https://github.com/rt64/dxc-bin.git"
         "git+https://github.com/nothings/stb.git"
         "git+https://github.com/btzy/nativefiledialog-extended.git"
@@ -81,12 +78,6 @@ sha256sums=('SKIP'
             'SKIP'
             'SKIP'
             'SKIP'
-            'SKIP'
-            'SKIP'
-            'SKIP'
-            'SKIP'
-            'SKIP'
-            'SKIP'
             '3df28d035ed99e08e0bcca794e1912db00254c91bd4b32652b7d2db3a506a8b1'
             'SKIP'
             'SKIP'
@@ -97,9 +88,38 @@ sha256sums=('SKIP'
             '59443fba2781cecccf96f76772a04764477c1c57d3226baa43d8cc3c30b085ad'
             'efb1365b3ae362604514c0f9a1a2d11f5dc8688ba5be660a37debf5e3be43f2b')
 
+# -- Per-repo submodules
+# We only need some of them for this linux platform
+_main_submodules=(
+  RmlUi
+  rt64
+  #freetype-windows-binaries
+  mm-decomp
+  lunasvg
+)
+_rt64_submodules=(
+  implot
+  hlslpp
+  #mupen64plus-win32-deps
+  #mupen64plus-core
+  xxHash
+  volk
+  Vulkan-Headers
+  VulkanMemoryAllocator
+  imgui
+  im3d
+  #D3D12MemoryAllocator
+  dxc
+  stb
+  nativefiledialog-extended
+)
+_n64recomp_submodules=(rabbitizer ELFIO fmt tomlplusplus)
+
+
 PKG_PREFIX="/opt/${_pkgname}"
 
-#  Print helpers
+
+# -- Print helpers
 _msg_info() {
   echo "${BOLD}>> ${GREEN}$@${ALL_OFF}"
 }
@@ -108,6 +128,26 @@ _msg_warn() {
   echo "${BOLD}>> ${YELLOW}$@${ALL_OFF}"
 }
 
+_is_debug() {
+  for opt in "${OPTIONS[@]}"; do
+    if [ "$opt" = debug ]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+_init_submodules() {
+  dir="$1"
+  shift 1
+
+  for sub in "$@"; do
+    git submodule init "${dir}/${sub}"
+    git config "submodule.${dir}/${sub}.url" "${srcdir}/${sub}"
+    git -c protocol.file.allow=always submodule update "${dir}/${sub}"
+  done
+}
 
 pkgver() {
   cd "${srcdir}/${_reponame}"
@@ -119,27 +159,13 @@ prepare() {
   _msg_info "Setting up the submodules..."
 
   cd "${srcdir}/${_zrecomp_dirname}"
-  git submodule init
-  for submodule in RmlUi freetype-windows-binaries lunasvg mm-decomp rt64; do
-    git config "submodule.lib/${submodule}.url" "${srcdir}/${submodule}"
-  done
-  git -c protocol.file.allow=always submodule update
+  _init_submodules lib "${_main_submodules[@]}"
 
   cd "${srcdir}/${_zrecomp_dirname}/lib/rt64"
-  git submodule init
-  for submodule in DLSS implot hlslpp xess mupen64plus-win32-deps mupen64plus-core \
-      xxHash volk Vulkan-Headers VulkanMemoryAllocator imgui im3d D3D12MemoryAllocator \
-      dxc stb nativefiledialog-extended; do
-    git config "submodule.src/contrib/${submodule}.url" "${srcdir}/${submodule}"
-  done
-  git -c protocol.file.allow=always submodule update
+  _init_submodules src/contrib "${_rt64_submodules[@]}"
 
   cd "${srcdir}/N64Recomp"
-  git submodule init
-  for submodule in rabbitizer ELFIO fmt tomlplusplus; do
-    git config "submodule.lib/${submodule}.url" "${srcdir}/${submodule}"
-  done
-  git -c protocol.file.allow=always submodule update
+  _init_submodules lib "${_n64recomp_submodules[@]}"
 
 
   _msg_info "Patching stuff up..."
@@ -147,6 +173,7 @@ prepare() {
   cd "${srcdir}/${_zrecomp_dirname}"
 
   # Ignore warnings on GCC not just clang...
+  # Unneeded since we use Clang compiler but just in case
   sed -i -e 's/__clang__/__GNUC__/' -e 's/clang/GCC/g' include/disable_warnings.h
 
 
@@ -204,7 +231,7 @@ build() {
 
   _msg_info "Building the game..."
 
-  if [[ "${OPTIONS[@]}" =~ " debug " ]]; then
+  if _is_debug; then
     BUILD_TYPE=RelWithDebInfo
   else
     BUILD_TYPE=Release
@@ -213,15 +240,15 @@ build() {
   # The entirety of the codebase doesn't care about security at all so we'll remove this flag
   export CFLAGS="${CFLAGS/-Werror=format-security/}"
   export CXXFLAGS="${CXXFLAGS/-Werror=format-security/}"
+  # use mold to speed up linking
+  export LDFLAGS="$LDFLAGS -fuse-ld=mold"
 
   # The official build docs recommends using Clang,
-  # but if you want to compensate file size or
-  # just for your own sakes, you can use GCC.
+  # but if you want (just for your own sakes),
+  # you can use GCC.
 
-  # use mold to speed up linking; added by myself
   cmake -B build -GNinja . \
     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-    -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=mold \
     -DCMAKE_CXX_COMPILER=clang++ \
     -DCMAKE_C_COMPILER=clang
 
@@ -243,7 +270,7 @@ SHELL
   install -Dm755 "${_zrecomp_dirname}/build/${bin_name}" "${pkgdir}/${PKG_PREFIX}/${bin_name}"
 
   # Strip the executable whether you like it or not, except for debugging purposes...
-  if [[ "${OPTIONS[@]}" =~ " debug " ]]; then
+  if ! _is_debug; then
     strip --strip-all "${pkgdir}/${PKG_PREFIX}/${bin_name}"
   fi
 
