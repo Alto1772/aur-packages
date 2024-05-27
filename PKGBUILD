@@ -31,7 +31,7 @@ source=("git+${url}.git#branch=dev"
         #"git+https://github.com/ubawurinna/freetype-windows-binaries.git"
         "mm-decomp::git+https://github.com/zeldaret/mm.git"
         "git+https://github.com/sammycage/lunasvg.git"
-	"git+https://github.com/DLTcollab/sse2neon.git"
+        "git+https://github.com/DLTcollab/sse2neon.git"
 
         # RT64 dependencies
         "git+https://github.com/epezent/implot.git"
@@ -196,8 +196,8 @@ build() {
 
   cp build/{N64Recomp,RSPRecomp} "${srcdir}/${_zrecomp_dirname}"
 
-  cd "${srcdir}/ido-static-recomp"
   if [ "$CARCH" != "x86_64" ]; then
+    cd "${srcdir}/ido-static-recomp"
     if [[ ! -e target-built.stamp || "$(cat target-built.stamp)" != "${_mm_compat_commit}" ]]; then
       _msg_info "Building IDO compiler recompilation for $CARCH"
 
