@@ -1,4 +1,5 @@
-# Maintainer: Moon Sungjoon <sumoon at seoulsaram dot org>
+# Maintainer: AltoXorg <machinademoniko AT gmail DOT com>
+# Contributor: Moon Sungjoon <sumoon at seoulsaram dot org>
 # Contributor: Alex Bates <hi@imalex.xyz>
 
 _target=mips-linux-gnu
@@ -6,12 +7,14 @@ pkgname=$_target-binutils
 pkgver=2.39
 pkgrel=1
 pkgdesc='A set of programs to assemble and manipulate binary and object files for the MIPS target'
-arch=('x86_64')
+arch=('x86_64' 'aarch64')
 url='http://www.gnu.org/software/binutils/'
 license=('GPL')
 depends=('zlib' 'libelf')
-source=("https://ftp.gnu.org/gnu/binutils/binutils-${pkgver}.tar.bz2")
-sha512sums=('faa592dd48fc715901ad704ac96dbd34b1792c51e77c7a92a387964b0700703c74be07de45cc4751945c8c0674368c73dc17bbc563d1d2cd235b5ebd8c6e7efb')
+source=(https://ftp.gnu.org/gnu/binutils/binutils-$pkgver.tar.bz2{,.sig})
+sha512sums=('faa592dd48fc715901ad704ac96dbd34b1792c51e77c7a92a387964b0700703c74be07de45cc4751945c8c0674368c73dc17bbc563d1d2cd235b5ebd8c6e7efb'
+            'SKIP')
+validpgpkeys=('3A24BC1E8FB409FA9F14371813FCEF89DD9E3C4F') # Nick Clifton (Chief Binutils Maintainer) <nickc@redhat.com>
 
 prepare() {
   cd binutils-${pkgver}
