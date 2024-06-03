@@ -10,7 +10,7 @@
 _RmlUi_commit=a893ea6386e0c842f90a726a53c9b9e888797519
 _lunasvg_tag=v2.3.9
 _mm_decomp_commit=5607eec18bae68e4cd38ef6d1fa69d7f1d84bfc8
-_rt64_commit=1adcbea31a04f2403da729eb5dfed3950dd7ec52
+_rt64_commit=e106c18965a89b26197bde972d9a83dd2dea1691
 _sse2neon_commit=42c704755d3ec218ed9126a122f0a667beeb630a
 
 _N64Recomp_commit=94b59d56f70228c3d3e3062cf1b1ab6ce42153c0
@@ -21,7 +21,7 @@ _ido_static_recomp_commit=d6dd7fdea26cfe89dd01d7545618d4a9ae4f690a
 _reponame=Zelda64Recomp
 _pkgname=${_reponame,,}
 pkgname=${_pkgname}
-pkgver=1.1.0
+pkgver=1.1.1
 _zrecomp_dirname="${_reponame}-${pkgver}"
 pkgrel=1
 arch=("x86_64" "aarch64")
@@ -72,11 +72,11 @@ source=("${_zrecomp_dirname}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz"
         "zelda64recomp.desktop"
         "file://baserom.mm.us.rev1.z64")
 source_aarch64=("git+https://github.com/decompals/ido-static-recomp.git#commit=${_ido_static_recomp_commit}")
-sha256sums=('10f10c53c5aaa977573cd0a61552bbd61c9f4a6f112f75741a7df44b44f2ca35'
+sha256sums=('afb77583d01b73981e08dc6b31baced42abc39c7b3365968b095dc2d5104d2a1'
             'fffad7b6eb3c3cec5b4e9033a09c068d33fb0bf028cc1560a4b96d1a15db32f1'
             '9d3878d9f7d7f93a2181551b8271420fe32d33f7259b3744667bca659b7e2593'
             'dc421693786da0df9d309b07134d84edf6e513e986aab92327dfbc7c8bab4f68'
-            'b59ac506cabceb7b3ccee9812012ac119f4d741a108eb6a94525d93a2d88a0ef'
+            '8eb9f91d4f69cc099d2de0d3ed72eec5138c0e6735d1e2d8bec979b178a9fde5'
             'ac242184d128281fb001c09f47638ec905b4cf42a6705a89f46606b8aaeac6bb'
             'SKIP'
             'SKIP'
@@ -98,7 +98,7 @@ sha256sums=('10f10c53c5aaa977573cd0a61552bbd61c9f4a6f112f75741a7df44b44f2ca35'
             '68fa964348231904c427d471091258de75308c7f0a77022fc8a009f8c6b9fae1'
             '59443fba2781cecccf96f76772a04764477c1c57d3226baa43d8cc3c30b085ad'
             'efb1365b3ae362604514c0f9a1a2d11f5dc8688ba5be660a37debf5e3be43f2b')
-sha256sums_aarch64=('SKIP')
+sha256sums_aarch64=('561f55850cc791c0bd3f29962675ef1a05f7c75a69c84215ff80a1008b99f59f')
 
 # -- Per-repo submodules
 # We only need some of them for this linux platform
