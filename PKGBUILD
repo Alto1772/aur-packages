@@ -12,7 +12,7 @@ _mm_compat_commit=23beee0717364de43ca9a82957cc910cf818de90
 _reponame=Zelda64Recomp
 _pkgname=${_reponame,,}
 pkgname=${_pkgname}-git
-pkgver=1.1.0.r2.g790b10a
+pkgver=1.1.1.r3.g030d793
 _zrecomp_dirname="${_reponame}"
 pkgrel=1
 arch=("x86_64" "aarch64")
@@ -22,7 +22,7 @@ pkgdesc="A port of The Legend of Zelda Majora's Mask made possible by static rec
 license=("GPL-3.0-only")
 provides=("${_pkgname}")
 conflicts=("${_pkgname}" "${_pkgname}-bin")  #  i don't have control over the bin version so i'll append this anyway...
-url="https://github.com/Mr-Wiseguy/${_reponame}"
+url="https://github.com/Zelda64Recomp/${_reponame}"
 source=("git+${url}.git#branch=dev"
 
         # main dependencies
@@ -32,6 +32,7 @@ source=("git+${url}.git#branch=dev"
         "mm-decomp::git+https://github.com/zeldaret/mm.git"
         "git+https://github.com/sammycage/lunasvg.git"
         "git+https://github.com/DLTcollab/sse2neon.git"
+        "git+https://github.com/N64Recomp/N64ModernRuntime.git"
 
         # RT64 dependencies
         "git+https://github.com/epezent/implot.git"
@@ -51,7 +52,7 @@ source=("git+${url}.git#branch=dev"
 
         # Tools for building MM elf and generating static recomps
         "mm-compat::git+https://github.com/zeldaret/mm#commit=${_mm_compat_commit}"
-        "N64Recomp::git+https://github.com/Mr-Wiseguy/N64Recomp.git"
+        "git+https://github.com/N64Recomp/N64Recomp.git"
 
         # N64Recomp dependencies
         "git+https://github.com/Decompollaborate/rabbitizer.git"
@@ -65,6 +66,7 @@ source=("git+${url}.git#branch=dev"
         "file://baserom.mm.us.rev1.z64")
 source_aarch64=("git+https://github.com/decompals/ido-static-recomp.git")
 sha256sums=('SKIP'
+            'SKIP'
             'SKIP'
             'SKIP'
             'SKIP'
@@ -101,6 +103,7 @@ _main_submodules=(
   mm-decomp
   lunasvg
   sse2neon
+  N64ModernRuntime
 )
 _rt64_submodules=(
   implot
@@ -119,7 +122,7 @@ _rt64_submodules=(
   nativefiledialog-extended
 )
 _n64recomp_submodules=(rabbitizer ELFIO fmt tomlplusplus)
-
+_n64modernruntime_submodules=(rt64)
 
 PKG_PREFIX="/opt/${_pkgname}"
 
@@ -148,9 +151,9 @@ _init_submodules() {
   shift 1
 
   for sub in "$@"; do
-    git submodule init "${dir}/${sub}"
-    git config "submodule.${dir}/${sub}.url" "${srcdir}/${sub}"
-    git -c protocol.file.allow=always submodule update "${dir}/${sub}"
+    git submodule init "${dir}${sub}"
+    git config "submodule.${dir}${sub}.url" "${srcdir}/${sub}"
+    git -c protocol.file.allow=always submodule update "${dir}${sub}"
   done
 }
 
@@ -164,23 +167,22 @@ prepare() {
   _msg_info "Setting up the submodules..."
 
   cd "${srcdir}/${_zrecomp_dirname}"
-  _init_submodules lib "${_main_submodules[@]}"
+  _init_submodules "lib/" "${_main_submodules[@]}"
 
   cd "${srcdir}/${_zrecomp_dirname}/lib/rt64"
-  _init_submodules src/contrib "${_rt64_submodules[@]}"
+  _init_submodules "src/contrib/" "${_rt64_submodules[@]}"
+
+  cd "${srcdir}/${_zrecomp_dirname}/lib/N64ModernRuntime"
+  _init_submodules "" "${_n64modernruntime_submodules[@]}"
+
+  cd "${srcdir}/${_zrecomp_dirname}/lib/N64ModernRuntime/rt64"
+  _init_submodules "src/contrib/" "${_rt64_submodules[@]}"
 
   cd "${srcdir}/N64Recomp"
-  _init_submodules lib "${_n64recomp_submodules[@]}"
+  _init_submodules "lib/" "${_n64recomp_submodules[@]}"
 
 
   _msg_info "Patching stuff up..."
-
-  cd "${srcdir}/${_zrecomp_dirname}"
-
-  # Ignore warnings on GCC not just clang...
-  # Unneeded since we use Clang compiler but just in case
-  sed -i -e 's/__clang__/__GNUC__/' -e 's/clang/GCC/g' include/disable_warnings.h
-
 
   cd "${srcdir}/mm-compat"
   patch -Np1 < "${srcdir}/mm-compat-disasm-script.patch"

@@ -1,8 +1,8 @@
 pkgbase = zelda64recomp-git
 	pkgdesc = A port of The Legend of Zelda Majora's Mask made possible by static recompilation (git)
-	pkgver = 1.1.0.r2.g790b10a
+	pkgver = 1.1.1.r3.g030d793
 	pkgrel = 1
-	url = https://github.com/Mr-Wiseguy/Zelda64Recomp
+	url = https://github.com/Zelda64Recomp/Zelda64Recomp
 	arch = x86_64
 	arch = aarch64
 	license = GPL-3.0-only
@@ -26,12 +26,13 @@ pkgbase = zelda64recomp-git
 	provides = zelda64recomp
 	conflicts = zelda64recomp
 	conflicts = zelda64recomp-bin
-	source = git+https://github.com/Mr-Wiseguy/Zelda64Recomp.git#branch=dev
+	source = git+https://github.com/Zelda64Recomp/Zelda64Recomp.git#branch=dev
 	source = git+https://github.com/mikke89/RmlUi.git
 	source = git+https://github.com/rt64/rt64.git
 	source = mm-decomp::git+https://github.com/zeldaret/mm.git
 	source = git+https://github.com/sammycage/lunasvg.git
 	source = git+https://github.com/DLTcollab/sse2neon.git
+	source = git+https://github.com/N64Recomp/N64ModernRuntime.git
 	source = git+https://github.com/epezent/implot.git
 	source = git+https://github.com/redorav/hlslpp.git
 	source = git+https://github.com/Cyan4973/xxHash.git
@@ -44,7 +45,7 @@ pkgbase = zelda64recomp-git
 	source = git+https://github.com/nothings/stb.git
 	source = git+https://github.com/btzy/nativefiledialog-extended.git
 	source = mm-compat::git+https://github.com/zeldaret/mm#commit=23beee0717364de43ca9a82957cc910cf818de90
-	source = N64Recomp::git+https://github.com/Mr-Wiseguy/N64Recomp.git
+	source = git+https://github.com/N64Recomp/N64Recomp.git
 	source = git+https://github.com/Decompollaborate/rabbitizer.git
 	source = git+https://github.com/serge1/ELFIO.git
 	source = git+https://github.com/fmtlib/fmt.git
@@ -52,6 +53,7 @@ pkgbase = zelda64recomp-git
 	source = mm-compat-disasm-script.patch::https://github.com/zeldaret/mm/pull/1606.patch
 	source = zelda64recomp.desktop
 	source = file://baserom.mm.us.rev1.z64
+	sha256sums = SKIP
 	sha256sums = SKIP
 	sha256sums = SKIP
 	sha256sums = SKIP
