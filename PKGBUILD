@@ -12,7 +12,7 @@ _mm_compat_commit=23beee0717364de43ca9a82957cc910cf818de90
 _reponame=Zelda64Recomp
 _pkgname=${_reponame,,}
 pkgname=${_pkgname}-git
-pkgver=1.1.1.r3.g030d793
+pkgver=1.1.1.r13.g07cfe51
 _zrecomp_dirname="${_reponame}"
 pkgrel=1
 arch=("x86_64" "aarch64")
@@ -122,7 +122,7 @@ _rt64_submodules=(
   nativefiledialog-extended
 )
 _n64recomp_submodules=(rabbitizer ELFIO fmt tomlplusplus)
-_n64modernruntime_submodules=(rt64)
+_n64modernruntime_submodules=(xxHash)
 
 PKG_PREFIX="/opt/${_pkgname}"
 
@@ -173,10 +173,7 @@ prepare() {
   _init_submodules "src/contrib/" "${_rt64_submodules[@]}"
 
   cd "${srcdir}/${_zrecomp_dirname}/lib/N64ModernRuntime"
-  _init_submodules "" "${_n64modernruntime_submodules[@]}"
-
-  cd "${srcdir}/${_zrecomp_dirname}/lib/N64ModernRuntime/rt64"
-  _init_submodules "src/contrib/" "${_rt64_submodules[@]}"
+  _init_submodules "thirdparty/" "${_n64modernruntime_submodules[@]}"
 
   cd "${srcdir}/N64Recomp"
   _init_submodules "lib/" "${_n64recomp_submodules[@]}"
