@@ -7,17 +7,15 @@
 # An N64 Majora's Mask US ROM must be provided in order to build this package.
 # Rename it to "baserom.mm.us.rev1.z64" and place it right to where this script is.
 
-_mm_compat_commit=23beee0717364de43ca9a82957cc910cf818de90
-
 _reponame=Zelda64Recomp
 _pkgname=${_reponame,,}
 pkgname=${_pkgname}-git
-pkgver=1.1.1.r13.g07cfe51
+pkgver=1.1.1.r20.g19d2e38
 _zrecomp_dirname="${_reponame}"
 pkgrel=1
 arch=("x86_64" "aarch64")
 depends=("sdl2" "freetype2" "libx11" "libxrandr" "gtk3" "vulkan-driver" "vulkan-icd-loader")
-makedepends=("git" "cmake" "ninja" "mold" "python" "make" "clang" "lld" "llvm" "mips-linux-gnu-binutils")
+makedepends=("git" "cmake" "ninja" "mold" "python" "make" "clang" "lld")
 pkgdesc="A port of The Legend of Zelda Majora's Mask made possible by static recompilation (git)"
 license=("GPL-3.0-only")
 provides=("${_pkgname}")
@@ -33,6 +31,7 @@ source=("git+${url}.git#branch=dev"
         "git+https://github.com/sammycage/lunasvg.git"
         "git+https://github.com/DLTcollab/sse2neon.git"
         "git+https://github.com/N64Recomp/N64ModernRuntime.git"
+        "git+https://github.com/Zelda64Recomp/Zelda64RecompSyms.git"
 
         # RT64 dependencies
         "git+https://github.com/epezent/implot.git"
@@ -51,7 +50,7 @@ source=("git+${url}.git#branch=dev"
         "git+https://github.com/btzy/nativefiledialog-extended.git"
 
         # Tools for building MM elf and generating static recomps
-        "mm-compat::git+https://github.com/zeldaret/mm#commit=${_mm_compat_commit}"
+        "git+https://github.com/z64tools/z64decompress.git"
         "git+https://github.com/N64Recomp/N64Recomp.git"
 
         # N64Recomp dependencies
@@ -61,10 +60,8 @@ source=("git+${url}.git#branch=dev"
         "git+https://github.com/marzer/tomlplusplus.git"
 
         # Misc. patches and the rom requirement
-        "mm-compat-disasm-script.patch::https://github.com/zeldaret/mm/pull/1606.patch"
         "zelda64recomp.desktop"
         "file://baserom.mm.us.rev1.z64")
-source_aarch64=("git+https://github.com/decompals/ido-static-recomp.git")
 sha256sums=('SKIP'
             'SKIP'
             'SKIP'
@@ -83,20 +80,20 @@ sha256sums=('SKIP'
             'SKIP'
             'SKIP'
             'SKIP'
-            '3df28d035ed99e08e0bcca794e1912db00254c91bd4b32652b7d2db3a506a8b1'
             'SKIP'
             'SKIP'
             'SKIP'
             'SKIP'
             'SKIP'
-            '68fa964348231904c427d471091258de75308c7f0a77022fc8a009f8c6b9fae1'
+            'SKIP'
+            'SKIP'
             '59443fba2781cecccf96f76772a04764477c1c57d3226baa43d8cc3c30b085ad'
             'efb1365b3ae362604514c0f9a1a2d11f5dc8688ba5be660a37debf5e3be43f2b')
-sha256sums_aarch64=('SKIP')
 
 # -- Per-repo submodules
 # We only need some of them for this linux platform
-_main_submodules=(
+_main_root_submodules=(Zelda64RecompSyms)
+_main_lib_submodules=(
   RmlUi
   rt64
   #freetype-windows-binaries
@@ -167,7 +164,8 @@ prepare() {
   _msg_info "Setting up the submodules..."
 
   cd "${srcdir}/${_zrecomp_dirname}"
-  _init_submodules "lib/" "${_main_submodules[@]}"
+  _init_submodules "" "${_main_root_submodules[@]}"
+  _init_submodules "lib/" "${_main_lib_submodules[@]}"
 
   cd "${srcdir}/${_zrecomp_dirname}/lib/rt64"
   _init_submodules "src/contrib/" "${_rt64_submodules[@]}"
@@ -179,10 +177,7 @@ prepare() {
   _init_submodules "lib/" "${_n64recomp_submodules[@]}"
 
 
-  _msg_info "Patching stuff up..."
-
-  cd "${srcdir}/mm-compat"
-  patch -Np1 < "${srcdir}/mm-compat-disasm-script.patch"
+  #_msg_info "Patching stuff up..."
 }
 
 build() {
@@ -195,54 +190,13 @@ build() {
 
   cp build/{N64Recomp,RSPRecomp} "${srcdir}/${_zrecomp_dirname}"
 
-  if [ "$CARCH" != "x86_64" ]; then
-    cd "${srcdir}/ido-static-recomp"
-    if [[ ! -e target-built.stamp || "$(cat target-built.stamp)" != "${_mm_compat_commit}" ]]; then
-      _msg_info "Building IDO compiler recompilation for $CARCH"
 
-      # append our flags with the flags from this project's makefile
-      export CFLAGS="$CFLAGS -MMD -fno-strict-aliasing -I." CXXFLAGS="$CXXFLAGS -MMD" LDFLAGS="$LDFLAGS -lm"
+  _msg_info "Building z64decompress and decompressing the MM rom"
 
-      make setup
-      make VERSION=5.3 RELEASE=1
-      make VERSION=7.1 RELEASE=1
-
-      echo "${_mm_compat_commit}" > target-built.stamp
-    fi
-
-    rm -rf "${srcdir}/mm-compat/tools/ido_recomp/linux/"*
-    ln -srf build/5.3/out "${srcdir}/mm-compat/tools/ido_recomp/linux/5.3"
-    ln -srf build/7.1/out "${srcdir}/mm-compat/tools/ido_recomp/linux/7.1"
-  fi
-
-  cd "${srcdir}/mm-compat"
-  cp "${srcdir}/baserom.mm.us.rev1.z64" .
-
-  if [[ ! -e target-built.stamp || "$(cat target-built.stamp)" != "${_mm_compat_commit}" ]]; then
-    _msg_info "Building the MM decomp-specific ELF file..."
-
-    [ ! -e .venv ] && python -m venv .venv
-    (
-      # Unset the build flags so that we won't intervene from this host system to the decomp's compilation process
-      unset CFLAGS CXXFLAGS LDFLAGS CC CPP CXX LD
-      export RUN_CC_CHECK=0
-      source .venv/bin/activate
-      pip install -U -r requirements.txt
-
-      # Mostly the same thing as the make init process with the only difference is to speed up time
-      make distclean
-      make setup
-      make assets
-      make disasm
-      make uncompressed  # We only need the uncompressed stuff out
-    )
-    echo "${_mm_compat_commit}" > target-built.stamp
-  else
-    _msg_warn "Decomp ELF file already built, skipping..."
-  fi
-
-  # Copy both the elf file and the uncompressed rom
-  cp mm.us.rev1.rom_uncompressed.{elf,z64} "${srcdir}/${_zrecomp_dirname}/"
+  cd "${srcdir}/z64decompress"
+  make
+  ./z64decompress "${srcdir}/baserom.mm.us.rev1.z64" mm.us.rev1.rom_uncompressed.z64
+  cp mm.us.rev1.rom_uncompressed.z64 "${srcdir}/${_zrecomp_dirname}/"
 
 
   cd "${srcdir}/${_zrecomp_dirname}"
