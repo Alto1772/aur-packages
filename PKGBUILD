@@ -10,7 +10,7 @@
 _reponame=Zelda64Recomp
 _pkgname=${_reponame,,}
 pkgname=${_pkgname}-git
-pkgver=1.1.1.r31.g3346400
+pkgver=1.1.1.r38.gaf1404b
 _zrecomp_dirname="${_reponame}"
 pkgrel=1
 arch=("x86_64" "aarch64")
@@ -50,6 +50,10 @@ source=("git+${url}.git#branch=dev"
         "git+https://github.com/btzy/nativefiledialog-extended.git"
         "git+https://github.com/redorav/ddspp.git"
         "git+https://github.com/facebook/zstd.git"
+        "git+https://github.com/rt64/re-spirv.git"
+
+        # re-spirv dependencies
+        "git+https://github.com/KhronosGroup/SPIRV-Headers.git"
 
         # Tools for building MM elf and generating static recomps
         "git+https://github.com/z64tools/z64decompress.git"
@@ -65,6 +69,8 @@ source=("git+${url}.git#branch=dev"
         "zelda64recomp.desktop"
         "file://baserom.mm.us.rev1.z64")
 sha256sums=('SKIP'
+            'SKIP'
+            'SKIP'
             'SKIP'
             'SKIP'
             'SKIP'
@@ -123,9 +129,11 @@ _rt64_submodules=(
   nativefiledialog-extended
   ddspp
   zstd
+  re-spirv
 )
 _n64recomp_submodules=(rabbitizer ELFIO fmt tomlplusplus)
 _n64modernruntime_submodules=(xxHash)
+_re_spirv_submodules=(SPIRV-Headers)
 
 PKG_PREFIX="/opt/${_pkgname}"
 
@@ -175,6 +183,9 @@ prepare() {
 
   cd "${srcdir}/${_zrecomp_dirname}/lib/rt64"
   _init_submodules "src/contrib/" "${_rt64_submodules[@]}"
+
+  cd "${srcdir}/${_zrecomp_dirname}/lib/rt64/src/contrib/re-spirv"
+  _init_submodules "external/" "${_re_spirv_submodules[@]}"
 
   cd "${srcdir}/${_zrecomp_dirname}/lib/N64ModernRuntime"
   _init_submodules "thirdparty/" "${_n64modernruntime_submodules[@]}"
