@@ -10,7 +10,7 @@
 _reponame=Zelda64Recomp
 _pkgname=${_reponame,,}
 pkgname=${_pkgname}-git
-pkgver=1.1.1.r38.gaf1404b
+pkgver=1.1.1.r39.gd99a84f
 _zrecomp_dirname="${_reponame}"
 pkgrel=1
 arch=("x86_64" "aarch64")
@@ -175,6 +175,10 @@ pkgver() {
 }
 
 prepare() {
+  # [ddspp] Fetch a dangling commit that's missing from our cloned repo
+  cd "${srcdir}/ddspp"
+  git fetch https://github.com/redorav/ddspp.git 2bdf73882b9169ca9d7a307b24d65d6c4e196084
+
   _msg_info "Setting up the submodules..."
 
   cd "${srcdir}/${_zrecomp_dirname}"
@@ -203,7 +207,8 @@ build() {
   cd "${srcdir}/N64Recomp"
 
   cmake -B build -DCMAKE_BUILD_TYPE=Release .
-  cmake --build build
+  cmake --build build --target N64RecompCLI
+  cmake --build build --target RSPRecomp
 
   cp build/{N64Recomp,RSPRecomp} "${srcdir}/${_zrecomp_dirname}"
 
