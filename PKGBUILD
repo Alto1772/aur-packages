@@ -10,12 +10,12 @@
 _reponame=Zelda64Recomp
 _pkgname=${_reponame,,}
 pkgname=${_pkgname}-git
-pkgver=1.1.1.r39.gd99a84f
+pkgver=1.1.1.r41.g91db876
 _zrecomp_dirname="${_reponame}"
 pkgrel=1
 arch=("x86_64" "aarch64")
 depends=("sdl2" "freetype2" "libx11" "libxrandr" "gtk3" "vulkan-driver" "vulkan-icd-loader")
-makedepends=("git" "cmake" "ninja" "mold" "python" "make" "clang" "lld")
+makedepends=("git" "cmake" "ninja" "python" "make" "clang" "lld")
 pkgdesc="A port of The Legend of Zelda Majora's Mask made possible by static recompilation (git)"
 license=("GPL-3.0-only")
 provides=("${_pkgname}")
@@ -52,6 +52,10 @@ source=("git+${url}.git#branch=dev"
         "git+https://github.com/facebook/zstd.git"
         "git+https://github.com/rt64/re-spirv.git"
 
+        # N64ModernRuntime dependencies
+        "git+https://github.com/richgel999/miniz.git"
+        "git+https://github.com/N64Recomp/o1heap.git"
+
         # re-spirv dependencies
         "git+https://github.com/KhronosGroup/SPIRV-Headers.git"
 
@@ -64,6 +68,7 @@ source=("git+${url}.git#branch=dev"
         "git+https://github.com/serge1/ELFIO.git"
         "git+https://github.com/fmtlib/fmt.git"
         "git+https://github.com/marzer/tomlplusplus.git"
+        "git+https://github.com/zherczeg/sljit.git"
 
         # Misc. patches and the rom requirement
         "zelda64recomp.desktop"
@@ -97,43 +102,11 @@ sha256sums=('SKIP'
             'SKIP'
             'SKIP'
             'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
             '59443fba2781cecccf96f76772a04764477c1c57d3226baa43d8cc3c30b085ad'
             'efb1365b3ae362604514c0f9a1a2d11f5dc8688ba5be660a37debf5e3be43f2b')
-
-# -- Per-repo submodules
-# We only need some of them for this linux platform
-_main_root_submodules=(Zelda64RecompSyms)
-_main_lib_submodules=(
-  RmlUi
-  rt64
-  #freetype-windows-binaries
-  mm-decomp
-  lunasvg
-  sse2neon
-  N64ModernRuntime
-)
-_rt64_submodules=(
-  implot
-  hlslpp
-  #mupen64plus-win32-deps
-  #mupen64plus-core
-  xxHash
-  volk
-  Vulkan-Headers
-  VulkanMemoryAllocator
-  imgui
-  im3d
-  #D3D12MemoryAllocator
-  dxc
-  stb
-  nativefiledialog-extended
-  ddspp
-  zstd
-  re-spirv
-)
-_n64recomp_submodules=(rabbitizer ELFIO fmt tomlplusplus)
-_n64modernruntime_submodules=(xxHash)
-_re_spirv_submodules=(SPIRV-Headers)
 
 PKG_PREFIX="/opt/${_pkgname}"
 
@@ -157,15 +130,57 @@ _is_debug() {
   return 1
 }
 
-_init_submodules() {
-  dir="$1"
-  shift 1
+# _init_submodules() {
+#   dir="$1"
+#   shift 1
+#
+#   for sub in "$@"; do
+#     git submodule init "${dir}${sub}"
+#     git config "submodule.${dir}${sub}.url" "${srcdir}/${sub}"
+#     git -c protocol.file.allow=always submodule update "${dir}${sub}"
+#   done
+# }
 
-  for sub in "$@"; do
-    git submodule init "${dir}${sub}"
-    git config "submodule.${dir}${sub}.url" "${srcdir}/${sub}"
-    git -c protocol.file.allow=always submodule update "${dir}${sub}"
-  done
+_walk_submodules() {
+    absdir="$(pwd | sed "s|^${srcdir}/||")"
+    _msg_info "Entering directory <${absdir}>"
+
+    local submodules="$(git ls-tree -r HEAD | awk '$2 == "commit"')"
+
+    if [ -z "$submodules" ]; then
+      return
+    fi
+
+    local mode type hash dir
+    while ifs=" " read -r mode type hash dir; do
+        local basedir="$(basename "$dir")"
+        local submodule_url="$(git config -f .gitmodules "submodule.${dir}.url")"
+
+        if [ ! -e "${srcdir}/${basedir}" ]; then
+            _msg_warn "Local repository ${basedir} (${submodule_url}) is missing from this PKGBUILD's directory. ${dir} is ignored for init!"
+            continue
+        fi
+
+        _msg_info "Initializing submodule ${dir}"
+
+        # Check if this specific commit exists locally within the repo
+        (
+            cd "${srcdir}/${basedir}"
+            if ! git branch -a --contains "$hash" > /dev/null; then
+                _msg_warn "Commit ${hash} of repo ${basedir} didn't get pulled from remote (${submodule_url}). Fetching now..."
+                git fetch "$submodule_url" "$hash"
+            fi
+        )
+
+        # Initialize and update submodule
+        git submodule init "${dir}"
+        git config "submodule.${dir}.url" "${srcdir}/${basedir}"
+        git -c protocol.file.allow=always submodule update "${dir}"
+
+        ( cd "$dir"; _walk_submodules; )
+    done <<< "$submodules"
+
+    _msg_info "Leaving directory <${absdir}>"
 }
 
 pkgver() {
@@ -175,27 +190,13 @@ pkgver() {
 }
 
 prepare() {
-  # [ddspp] Fetch a dangling commit that's missing from our cloned repo
-  cd "${srcdir}/ddspp"
-  git fetch https://github.com/redorav/ddspp.git 2bdf73882b9169ca9d7a307b24d65d6c4e196084
-
   _msg_info "Setting up the submodules..."
 
   cd "${srcdir}/${_zrecomp_dirname}"
-  _init_submodules "" "${_main_root_submodules[@]}"
-  _init_submodules "lib/" "${_main_lib_submodules[@]}"
-
-  cd "${srcdir}/${_zrecomp_dirname}/lib/rt64"
-  _init_submodules "src/contrib/" "${_rt64_submodules[@]}"
-
-  cd "${srcdir}/${_zrecomp_dirname}/lib/rt64/src/contrib/re-spirv"
-  _init_submodules "external/" "${_re_spirv_submodules[@]}"
-
-  cd "${srcdir}/${_zrecomp_dirname}/lib/N64ModernRuntime"
-  _init_submodules "thirdparty/" "${_n64modernruntime_submodules[@]}"
+  _walk_submodules
 
   cd "${srcdir}/N64Recomp"
-  _init_submodules "lib/" "${_n64recomp_submodules[@]}"
+  _walk_submodules
 
 
   #_msg_info "Patching stuff up..."
@@ -240,8 +241,8 @@ build() {
   # The entirety of the codebase doesn't care about security at all so we'll remove this flag
   export CFLAGS="${CFLAGS/-Werror=format-security/}"
   export CXXFLAGS="${CXXFLAGS/-Werror=format-security/}"
-  # use mold to speed up linking
-  export LDFLAGS="$LDFLAGS -fuse-ld=mold"
+  # mold linker breaks libSDL2-main.a of sdl2-compat, replace with LLVM ld temporarily
+  export LDFLAGS="$LDFLAGS -fuse-ld=lld"
 
   # The official build docs recommends using Clang,
   # but if you want (just for your own sakes),
@@ -275,6 +276,8 @@ SHELL
   fi
 
   cp -r --preserve=mode "${_zrecomp_dirname}/assets" "${pkgdir}/${PKG_PREFIX}/"
+  install -Dm644 "${_zrecomp_dirname}/gamecontrollerdb.txt" "${pkgdir}/${PKG_PREFIX}/"
+
   install -Dm755 launch.sh "${pkgdir}/usr/bin/${bin_name}"
   install -Dm644 zelda64recomp.desktop -t "${pkgdir}/usr/share/applications"
   install -Dm644 "${_zrecomp_dirname}/icons/512.png" "${pkgdir}/usr/share/icons/hicolor/512x512/apps/zelda64recomp.png"
