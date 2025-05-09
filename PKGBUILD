@@ -10,7 +10,7 @@
 _reponame=Zelda64Recomp
 _pkgname=${_reponame,,}
 pkgname=${_pkgname}-git
-pkgver=1.1.1.r41.g91db876
+pkgver=1.2.0.r1.g5499743
 _zrecomp_dirname="${_reponame}"
 pkgrel=1
 arch=("x86_64" "aarch64")
@@ -32,6 +32,7 @@ source=("git+${url}.git#branch=dev"
         "git+https://github.com/DLTcollab/sse2neon.git"
         "git+https://github.com/N64Recomp/N64ModernRuntime.git"
         "git+https://github.com/Zelda64Recomp/Zelda64RecompSyms.git"
+        "git+https://github.com/SergeyMakeev/slot_map.git"
 
         # RT64 dependencies
         "git+https://github.com/epezent/implot.git"
@@ -105,6 +106,7 @@ sha256sums=('SKIP'
             'SKIP'
             'SKIP'
             'SKIP'
+            'SKIP'
             '59443fba2781cecccf96f76772a04764477c1c57d3226baa43d8cc3c30b085ad'
             'efb1365b3ae362604514c0f9a1a2d11f5dc8688ba5be660a37debf5e3be43f2b')
 
@@ -129,17 +131,6 @@ _is_debug() {
 
   return 1
 }
-
-# _init_submodules() {
-#   dir="$1"
-#   shift 1
-#
-#   for sub in "$@"; do
-#     git submodule init "${dir}${sub}"
-#     git config "submodule.${dir}${sub}.url" "${srcdir}/${sub}"
-#     git -c protocol.file.allow=always submodule update "${dir}${sub}"
-#   done
-# }
 
 _walk_submodules() {
     absdir="$(pwd | sed "s|^${srcdir}/||")"
@@ -276,7 +267,7 @@ SHELL
   fi
 
   cp -r --preserve=mode "${_zrecomp_dirname}/assets" "${pkgdir}/${PKG_PREFIX}/"
-  install -Dm644 "${_zrecomp_dirname}/gamecontrollerdb.txt" "${pkgdir}/${PKG_PREFIX}/"
+  install -Dm644 "${_zrecomp_dirname}/recompcontrollerdb.txt" "${pkgdir}/${PKG_PREFIX}/"
 
   install -Dm755 launch.sh "${pkgdir}/usr/bin/${bin_name}"
   install -Dm644 zelda64recomp.desktop -t "${pkgdir}/usr/share/applications"
